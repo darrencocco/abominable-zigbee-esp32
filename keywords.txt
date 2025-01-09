@@ -1,0 +1,17 @@
+AbominableZigbeeMultistateValue KEYWORD1
+Marshal KEYWORD1
+
+seDeviceType KEYWORD2
+setDescription KEYWORD2
+setOptions KEYWORD2
+setNumberOfOptions KEYWORD2
+setSelection KEYWORD2
+getDescription KEYWORD2
+getOptions KEYWORD2
+getNumberOfOptions KEYWORD2
+getSelection KEYWORD2
+getStatusFlags KEYWORD2
+isOutOfService KEYWORD2
+onConfigReceive KEYWORD2
+onValueReceive KEYWORD2
+setReporting KEYWORD2
