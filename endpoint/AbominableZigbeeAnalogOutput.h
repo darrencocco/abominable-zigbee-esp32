@@ -28,6 +28,7 @@ public:
     ~AbominableZigbeeAnalogOutput();
 
 protected:
+    void _addClusterSpecificCluster(esp_zb_cluster_list_t* clusterList) override;
 
     void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
     void (*_on_value_receive)(uint16_t);

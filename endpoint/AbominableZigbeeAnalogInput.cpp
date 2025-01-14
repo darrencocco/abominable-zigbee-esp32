@@ -4,6 +4,8 @@
 
 #include "AbominableZigbeeAnalogInput.h"
 
+#include <esp_zigbee_cluster.h>
+
 AbominableZigbeeAnalogInput::AbominableZigbeeAnalogInput(uint8_t endpoint) : AbominableZigbeeAnalogBase(endpoint) {
     _clusterId = AZB_ZCL_CLUSTER_ID_ANALOG_INPUT;
     _descriptionId = AZB_ZCL_ATTR_ANALOG_INPUT_DESCRIPTION_ID;
@@ -19,6 +21,10 @@ AbominableZigbeeAnalogInput::AbominableZigbeeAnalogInput(uint8_t endpoint) : Abo
 }
 
 AbominableZigbeeAnalogInput::~AbominableZigbeeAnalogInput() {
+}
+
+void AbominableZigbeeAnalogInput::_addClusterSpecificCluster(esp_zb_cluster_list_t *clusterList) {
+    esp_zb_cluster_list_add_analog_input_cluster(clusterList, _createCustomClusterDefinition(), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
 }
 
 void AbominableZigbeeAnalogInput::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {

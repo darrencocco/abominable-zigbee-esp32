@@ -20,6 +20,10 @@ AbominableZigbeeAnalogOutput::AbominableZigbeeAnalogOutput(uint8_t endpoint) : A
 
 AbominableZigbeeAnalogOutput::~AbominableZigbeeAnalogOutput() {}
 
+void AbominableZigbeeAnalogOutput::_addClusterSpecificCluster(esp_zb_cluster_list_t *clusterList) {
+    esp_zb_cluster_list_add_analog_output_cluster(clusterList, _createCustomClusterDefinition(), ESP_ZB_ZCL_CLUSTER_SERVER_ROLE);
+}
+
 void AbominableZigbeeAnalogOutput::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {
     AbominableZigbeeAnalogBase::zbAttributeSet(message);
 }

@@ -10,12 +10,14 @@
 #define AZB_ZCL_ATTR_BINARY_OUTPUT_ACTIVE_TEXT_ID 0x0004
 #define AZB_ZCL_ATTR_BINARY_OUTPUT_DESCRIPTION_ID 0x001C
 #define AZB_ZCL_ATTR_BINARY_OUTPUT_INACTIVE_TEXT_ID 0x002E
-#define AZB_ZCL_ATTR_BINARY_OUTPUT_OUT_OFF_SERVICE_ID 0x0051
+#define AZB_ZCL_ATTR_BINARY_OUTPUT_OUT_OF_SERVICE_ID 0x0051
 #define AZB_ZCL_ATTR_BINARY_OUTPUT_PRESENT_VALUE_ID 0x0055
 #define AZB_ZCL_ATTR_BINARY_OUTPUT_STATUS_FLAGS_ID 0x006F
+#include "AbominableZigbeeBinaryBase.h"
 
-class AbominableZigbeeBinaryOutput {
-
+class AbominableZigbeeBinaryOutput : AbominableZigbeeBinaryBase {
+public:
+    AbominableZigbeeBinaryOutput(uint8_t endpoint);
 };
 
 

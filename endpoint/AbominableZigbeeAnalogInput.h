@@ -16,6 +16,8 @@
 #define AZB_ZCL_ATTR_ANALOG_INPUT_STATUS_FLAGS_ID 0x006F
 #define AZB_ZCL_ATTR_ANALOG_INPUT_ENGINEERING_UNITS_ID 0x0075
 
+#include <zcl/esp_zigbee_zcl_command.h>
+
 #include "AbominableZigbeeAnalogBase.h"
 
 class AbominableZigbeeAnalogInput : AbominableZigbeeAnalogBase {
@@ -24,6 +26,7 @@ public:
     ~AbominableZigbeeAnalogInput();
 
 protected:
+    void _addClusterSpecificCluster(esp_zb_cluster_list_t* clusterList) override;
 
     void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
     void (*_on_value_receive)(uint16_t);
