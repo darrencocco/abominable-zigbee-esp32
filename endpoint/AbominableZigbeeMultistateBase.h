@@ -5,8 +5,8 @@
 #ifndef ABOMINABLEZIGBEEMULTISTATEBASE_H
 #define ABOMINABLEZIGBEEMULTISTATEBASE_H
 
-#include <list>
 #include <zcl/esp_zigbee_zcl_command.h>
+#include <zdo/esp_zigbee_zdo_command.h>
 
 #include "AbominableZigbeeEP.h"
 
@@ -15,10 +15,13 @@ public:
     AbominableZigbeeMultistateBase(uint8_t endpoint);
     virtual ~AbominableZigbeeMultistateBase();
 
-    void setDescription(char* desc);
-    void setOptions(const char **options, uint16_t length);
-    void setNumberOfOptions(uint16_t count);
+    void presetDescription(char* desc);
+    void presetOptions(const char **options, uint16_t length);
+    void presetNumberOfOptions(uint16_t count);
+    void presetSelection(uint16_t selection);
+
     void setSelection(uint16_t selection);
+    void setReporting(uint16_t minInterval, uint16_t maxInterval);
 
     char* getDescription();
     char** getOptions();
@@ -27,15 +30,13 @@ public:
     uint8_t getStatusFlags();
     bool isOutOfService();
 
-    void onConfigReceive(void (*callback)(uint16_t, uint16_t, std::list<char *>)) {
-        _on_config_receive = callback;
+    void onSelectionSet(void (*callback)(uint16_t)) {
+        _onSelectionSet = callback;
     }
 
-    void onValueReceive(void (*callback)(uint16_t)) {
-        _on_value_receive = callback;
-    }
+    void reportSelection();
 
-    void setReporting(uint16_t minInterval, uint16_t maxInterval);
+    void fuckingBinding();
 
 protected:
     uint16_t _stateTextId;
@@ -56,12 +57,13 @@ protected:
 
     void _updateFlags();
 
-    void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
-    void (*_on_value_receive)(uint16_t);
+    void (*_onSelectionSet)(uint16_t);
+
+    void (*_fuckingwat)(esp_zb_zdp_status_t, esp_zb_zdo_ieee_addr_rsp_t*, void*);
 
     esp_zb_attribute_list_t *_createCustomClusterDefinition() override;
+
+    void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
 };
-
-
 
 #endif //ABOMINABLEZIGBEEMULTISTATEBASE_H

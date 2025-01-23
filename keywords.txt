@@ -4,21 +4,29 @@ AbominableZigbeeAnalogOutput KEYWORD1
 AbominableZigbeeAnalogInput KEYWORD1
 AbominableZigbeeBinaryOutput KEYWORD1
 AbominableZigbeeBinaryInput KEYWORD1
+AbominableZigbeeEP KEYWORD1
 Marshal KEYWORD1
 
-setDeviceType KEYWORD2
-setDescription KEYWORD2
-setOptions KEYWORD2
-setNumberOfOptions KEYWORD2
-setSelection KEYWORD2
-setMin KEYWORD2
-setMax KEYWORD2
-setResolution KEYWORD2
-setUnitType KEYWORD2
-setOutOfService KEYWORD2
+presetManufacturerAndModel KEYWORD2
+presetDeviceType KEYWORD2
+presetDescription KEYWORD2
+presetOptions KEYWORD2
+presetNumberOfOptions KEYWORD2
+presetSelection KEYWORD2
+presetMin KEYWORD2
+presetMax KEYWORD2
+presetResolution KEYWORD2
+presetUnitType KEYWORD2
+presetOutOfService KEYWORD2
+presetValue KEYWORD2
+presetTrueText KEYWORD2
+presetFalseText KEYWORD2
+
 setValue KEYWORD2
-setTrueText KEYWORD2
-setFalseText KEYWORD2
+setSelection KEYWORD2
+reportValue KEYWORD2
+reportSelection KEYWORD2
+
 getDescription KEYWORD2
 getOptions KEYWORD2
 getNumberOfOptions KEYWORD2
@@ -28,6 +36,7 @@ getValue KEYWORD2
 getTrueText KEYWORD2
 getFalseText KEYWORD2
 isOutOfService KEYWORD2
-onConfigReceive KEYWORD2
-onValueReceive KEYWORD2
-setReporting KEYWORD2
+onValueSet KEYWORD2
+onSelectionSet KEYWORD2
+
+bindToCoordinator KEYWORD2

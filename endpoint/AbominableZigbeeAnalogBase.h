@@ -4,8 +4,9 @@
 
 #ifndef ABOMINABLEZIGBEEANALOGBASE_H
 #define ABOMINABLEZIGBEEANALOGBASE_H
+
 #include <cstdint>
-#include <list>
+#include <zcl/esp_zigbee_zcl_command.h>
 
 #include "AbominableZigbeeEP.h"
 
@@ -14,15 +15,16 @@ public:
     AbominableZigbeeAnalogBase(uint8_t endpoint);
     ~AbominableZigbeeAnalogBase();
 
-    void setDeviceType(uint16_t deviceType);
-    void setDescription(char* description);
-    void setMin(float_t min);
-    void setMax(float_t max);
+    void presetDescription(char* description);
+    void presetMin(float_t min);
+    void presetMax(float_t max);
+    void presetValue(float_t value);
+    void presetResolution(float_t resolution);
+    void presetUnitType(uint16_t unitTypeId);
+    void presetStatusFlags(uint8_t flags);
+    void presetOutOfService(bool outOfService);
+
     void setValue(float_t value);
-    void setResolution(float_t resolution);
-    void setUnitType(uint16_t unitTypeId);
-    void setStatusFlags(uint8_t flags);
-    void setOutOfService(bool outOfService);
     void setReporting(uint16_t minInterval, uint16_t maxInterval, float_t delta);
 
     char* getDescription();
@@ -34,13 +36,11 @@ public:
     uint8_t getStatusFlags();
     bool isOutOfService();
 
-    void onConfigReceive(void (*callback)(uint16_t, uint16_t, std::list<char *>)) {
-        _on_config_receive = callback;
+    void onValueSet(void (*callback)(float_t)) {
+        _onValueSet = callback;
     }
 
-    void onValueReceive(void (*callback)(uint16_t)) {
-        _on_value_receive = callback;
-    }
+    void reportValue();
 
 protected:
     char* _description = nullptr;
@@ -64,10 +64,11 @@ protected:
     uint16_t _statusFlagsId;
     uint16_t _engineeringUnitsId;
 
-    void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
-    void (*_on_value_receive)(uint16_t);
+    void (*_onValueSet)(float_t);
 
     esp_zb_attribute_list_t *_createCustomClusterDefinition() override;
+
+    void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
 
 };
 

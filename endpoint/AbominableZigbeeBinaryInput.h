@@ -17,7 +17,7 @@
 #include "AbominableZigbeeBinaryBase.h"
 
 
-class AbominableZigbeeBinaryInput : AbominableZigbeeBinaryBase {
+class AbominableZigbeeBinaryInput : public AbominableZigbeeBinaryBase {
 public:
     AbominableZigbeeBinaryInput(uint8_t endpoint);
 protected:

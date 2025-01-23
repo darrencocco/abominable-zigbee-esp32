@@ -15,7 +15,7 @@ AbominableZigbeeMultistateBase::AbominableZigbeeMultistateBase(uint8_t endpoint)
 
 AbominableZigbeeMultistateBase::~AbominableZigbeeMultistateBase() {}
 
-void AbominableZigbeeMultistateBase::setDescription(char *desc) {
+void AbominableZigbeeMultistateBase::presetDescription(char *desc) {
     if (strlen(desc) > AZB_MAX_STRING_LEN) {
         throw std::invalid_argument("ZigbeeMultistateBase::Description string is too long, must be 16 characters or less.");
     }
@@ -24,12 +24,10 @@ void AbominableZigbeeMultistateBase::setDescription(char *desc) {
     }
     strcpy(_description, desc);
     uint8_t* newDescription = Marshal::String::toZigbeeString(_description, ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING);
-    esp_err_t result = esp_zb_cluster_update_attr(_getCluster(_clusterId),
-       _descriptionId, newDescription);
-    log_d("Updating %02X: %s", _descriptionId, esp_err_to_name(result));
+    esp_zb_cluster_update_attr(_getCluster(_clusterId), _descriptionId, newDescription);
 }
 
-void AbominableZigbeeMultistateBase::setOptions(const char **options, const uint16_t length) {
+void AbominableZigbeeMultistateBase::presetOptions(const char **options, const uint16_t length) {
     size_t biggestString = 0;
     for (int i = 0; i < length; i++) {
         biggestString = std::max(strlen(options[i]), biggestString);
@@ -56,33 +54,34 @@ void AbominableZigbeeMultistateBase::setOptions(const char **options, const uint
     uint8_t* optionsPacked = Marshal::Array::toZigbeeArray(_options, _numberOfOptions, ESP_ZB_ZCL_ATTR_TYPE_CHAR_STRING);
 
     esp_zb_attribute_list_t *multistateValueCluster = _getCluster(_clusterId);
-    esp_err_t result = esp_zb_cluster_update_attr(multistateValueCluster, _stateTextId, optionsPacked);
-    log_d("Updating %02X: %s", _stateTextId, esp_err_to_name(result));
-    result = esp_zb_cluster_update_attr(multistateValueCluster, _numberOfStatesId, &_numberOfOptions);
-    log_d("Updating %02X: %s", _numberOfStatesId, esp_err_to_name(result));
-    result = esp_zb_cluster_update_attr(multistateValueCluster, _presentValueId, &_currentSelection);
-    log_d("Updating %02X: %s", _presentValueId, esp_err_to_name(result));
+    esp_zb_cluster_update_attr(multistateValueCluster, _stateTextId, optionsPacked);
+    esp_zb_cluster_update_attr(multistateValueCluster, _numberOfStatesId, &_numberOfOptions);
+    esp_zb_cluster_update_attr(multistateValueCluster, _presentValueId, &_currentSelection);
 }
 
-void AbominableZigbeeMultistateBase::setNumberOfOptions(uint16_t count) {
+void AbominableZigbeeMultistateBase::presetNumberOfOptions(uint16_t count) {
     _numberOfOptions = count;
     uint16_t numberOfOptions = _numberOfOptions;
     esp_err_t result = esp_zb_cluster_update_attr(_getCluster(_clusterId),
         _numberOfStatesId, &numberOfOptions);
     free(&numberOfOptions);
-    log_d("Updating %02X: %s", _numberOfStatesId, esp_err_to_name(result));
 }
 
-void AbominableZigbeeMultistateBase::setSelection(const uint16_t selection) {
+void AbominableZigbeeMultistateBase::presetSelection(const uint16_t selection) {
     if (selection > _numberOfOptions) {
         throw std::invalid_argument("ZigbeeMultistateBase::setSelection out of range");
     }
     _currentSelection = selection;
-    uint16_t currentSelection = _currentSelection;
-    esp_err_t result = esp_zb_cluster_update_attr(_getCluster(_clusterId),
-        _presentValueId, &currentSelection);
-    free(&currentSelection);
-    log_d("Updating %02X: %s", _presentValueId, esp_err_to_name(result));
+    esp_zb_cluster_update_attr(_getCluster(_clusterId), _presentValueId, &_currentSelection);
+}
+
+void AbominableZigbeeMultistateBase::setSelection(uint16_t selection) {
+    _currentSelection = selection;
+    esp_zb_lock_acquire(portMAX_DELAY);
+    esp_zb_zcl_set_attribute_val(_endpoint, _clusterId, ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
+        _presentValueId, &_currentSelection, false);
+    esp_zb_lock_release();
+    reportSelection();
 }
 
 char *AbominableZigbeeMultistateBase::getDescription() {
@@ -113,10 +112,27 @@ bool AbominableZigbeeMultistateBase::isOutOfService() {
     return _flagOutOfService;
 }
 
+void AbominableZigbeeMultistateBase::reportSelection() {
+    esp_zb_zcl_report_attr_cmd_t report_attr_cmd;
+    report_attr_cmd.address_mode = ESP_ZB_APS_ADDR_MODE_DST_ADDR_ENDP_NOT_PRESENT;
+    report_attr_cmd.attributeID = _presentValueId;
+    report_attr_cmd.direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_CLI;
+    report_attr_cmd.clusterID = _clusterId;
+    report_attr_cmd.zcl_basic_cmd.src_endpoint = _endpoint;
+
+    bool lockAcquired = false;
+    do {
+        delay(100);
+        lockAcquired = esp_zb_lock_acquire(portMAX_DELAY);
+    } while (!lockAcquired);
+    esp_zb_zcl_report_attr_cmd_req(&report_attr_cmd);
+    esp_zb_lock_release();
+}
+
 void AbominableZigbeeMultistateBase::setReporting(uint16_t minInterval, uint16_t maxInterval) {
     // clang-format off
     esp_zb_zcl_reporting_info_t reportingInfo = {
-        .direction = ESP_ZB_ZCL_CMD_DIRECTION_TO_SRV,
+        .direction = ESP_ZB_ZCL_REPORT_DIRECTION_SEND,
         .ep = _endpoint,
         .cluster_id = _clusterId,
         .cluster_role = ESP_ZB_ZCL_CLUSTER_SERVER_ROLE,
@@ -131,8 +147,8 @@ void AbominableZigbeeMultistateBase::setReporting(uint16_t minInterval, uint16_t
                   {
                     .u16 = 1,
                   },
-                .def_min_interval = 0,
-                .def_max_interval = 30,
+                .def_min_interval = minInterval,
+                .def_max_interval = maxInterval,
               },
           },
         .dst =
@@ -149,9 +165,7 @@ void AbominableZigbeeMultistateBase::setReporting(uint16_t minInterval, uint16_t
 
 void AbominableZigbeeMultistateBase::_updateFlags() {
     uint8_t flags = getStatusFlags();
-    esp_err_t result = esp_zb_cluster_update_attr(_getCluster(_clusterId),
-        _statusFlagsId, &flags);
-    log_d("Updating %02X: %s", _statusFlagsId, esp_err_to_name(result));
+    esp_zb_cluster_update_attr(_getCluster(_clusterId), _statusFlagsId, &flags);
 }
 
 esp_zb_attribute_list_t * AbominableZigbeeMultistateBase::_createCustomClusterDefinition() {
@@ -200,4 +214,28 @@ esp_zb_attribute_list_t * AbominableZigbeeMultistateBase::_createCustomClusterDe
         &statusFlags);
 
     return customCluster;
+}
+
+void AbominableZigbeeMultistateBase::zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) {
+    AbominableZigbeeEP::zbAttributeSet(message);
+    if (message->info.cluster == _clusterId) {
+        if (message->attribute.id == _presentValueId) {
+            uint16_t value = *(uint16_t*)message->attribute.data.value;
+            if (value > _numberOfOptions) {
+                setSelection(_currentSelection);
+            } else {
+                _currentSelection = value;
+                _onSelectionSet(value);
+                reportSelection();
+            }
+        } else if (message->attribute.id == _stateTextId) {
+
+        } else if (message->attribute.id == _outOfServiceId) {
+
+        } else if (message->attribute.id == _descriptionId) {
+
+        } else {
+
+        }
+    }
 }

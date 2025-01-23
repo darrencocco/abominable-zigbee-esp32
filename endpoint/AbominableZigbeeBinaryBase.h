@@ -5,22 +5,23 @@
 #ifndef ABOMINABLEZIGBEEBINARYBASE_H
 #define ABOMINABLEZIGBEEBINARYBASE_H
 #include <cstdint>
-#include <list>
+#include <zcl/esp_zigbee_zcl_command.h>
 
 #include "AbominableZigbeeEP.h"
-#include "soc/soc_caps.h"
 
 class AbominableZigbeeBinaryBase : public AbominableZigbeeEP {
 public:
     AbominableZigbeeBinaryBase(uint8_t endpoint);
     virtual ~AbominableZigbeeBinaryBase();
 
-    void setDescription(char* description);
-    void setTrueText(char* activeText);
-    void setFalseText(char* inactiveText);
-    void setValue(bool value);
-    void setOutOfService(bool outOfService);
-    void setStatusFlags(uint8_t flags);
+    void presetDescription(char* description);
+    void presetTrueText(char* activeText);
+    void presetFalseText(char* inactiveText);
+    void presetValue(bool value);
+    void presetOutOfService(bool outOfService);
+    void presetStatusFlags(uint8_t flags);
+
+    void setValue(bool value);;
     void setReporting(uint16_t minInterval, uint16_t maxInterval);
 
     char* getDescription();
@@ -30,13 +31,11 @@ public:
     uint8_t getStatusFlags();
     bool isOutOfService();
 
-    void onConfigReceive(void (*callback)(uint16_t, uint16_t, std::list<char *>)) {
-        _on_config_receive = callback;
+    void onValueSet(void (*callback)(bool)) {
+        _onValueSet = callback;
     }
 
-    void onValueReceive(void (*callback)(uint16_t)) {
-        _on_value_receive = callback;
-    }
+    void reportValue();
 
 protected:
     char* _activeText = nullptr;
@@ -53,12 +52,11 @@ protected:
     uint16_t _presentValueId;
     uint16_t _statusFlagsId;
 
-    void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
-    void (*_on_value_receive)(uint16_t);
+    void (*_onValueSet)(bool);
 
     esp_zb_attribute_list_t *_createCustomClusterDefinition() override;
+
+    void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
 };
-
-
 
 #endif //ABOMINABLEZIGBEEBINARYBASE_H

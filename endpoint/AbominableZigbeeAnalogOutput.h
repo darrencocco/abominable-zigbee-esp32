@@ -5,8 +5,6 @@
 #ifndef ABOMINABLEZIGBEEANALOGVALUE_H
 #define ABOMINABLEZIGBEEANALOGVALUE_H
 
-#include <list>
-
 #include "AbominableZigbeeAnalogBase.h"
 
 #include "ha/esp_zigbee_ha_standard.h"
@@ -29,9 +27,6 @@ public:
 
 protected:
     void _addClusterSpecificCluster(esp_zb_cluster_list_t* clusterList) override;
-
-    void (*_on_config_receive)(uint16_t, uint16_t, std::list<char *>);
-    void (*_on_value_receive)(uint16_t);
 
     void zbAttributeSet(const esp_zb_zcl_set_attr_value_message_t *message) override;
     void zbAttributeRead(uint16_t cluster_id, const esp_zb_zcl_attribute_t *attribute) override;

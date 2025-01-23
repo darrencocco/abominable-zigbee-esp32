@@ -13,5 +13,8 @@ AbominableZigbeeBinaryOutput::AbominableZigbeeBinaryOutput(uint8_t endpoint) : A
     _presentValueId = AZB_ZCL_ATTR_BINARY_OUTPUT_PRESENT_VALUE_ID;
     _statusFlagsId = AZB_ZCL_ATTR_BINARY_OUTPUT_STATUS_FLAGS_ID;
 
+    _customBindingRequired = true;
+    _coordinatorBound = false;
+
     _setup();
 }

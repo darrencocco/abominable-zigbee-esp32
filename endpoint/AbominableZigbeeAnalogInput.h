@@ -20,7 +20,7 @@
 
 #include "AbominableZigbeeAnalogBase.h"
 
-class AbominableZigbeeAnalogInput : AbominableZigbeeAnalogBase {
+class AbominableZigbeeAnalogInput : public AbominableZigbeeAnalogBase {
 public:
     AbominableZigbeeAnalogInput(uint8_t endpoint);
     ~AbominableZigbeeAnalogInput();
